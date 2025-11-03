@@ -1,30 +1,42 @@
 import client from "../config/database.js";
 import {} from "express";
 import { hashPassword, checkPasswordStrength, comparePassword } from "./passwordHelpers.js";
-import { generateToken } from "../controllers/tokenHelpers.js";
+import { generateToken } from "../utils/jwt.js";
 //New User Registration Function
 export const registerUser = async (req, res) => {
     try {
         const { firstName, lastName, emailAddress, username, password } = req.body;
         if (!firstName || !lastName || !emailAddress || !username || !password) {
             console.log("All fields required");
-            return res.status(400).json({ message: "Something Went Wrong" });
+            return res.status(400).json({
+                status: "Error",
+                message: "Something Went Wrong"
+            });
         }
         //I check if email exists in db
         const existingEmail = await client.user.findUnique({ where: { emailAddress } });
         if (existingEmail) {
             console.log("User already registered");
-            return res.status(400).json({ message: "User email already registered" });
+            return res.status(400).json({
+                status: "Error",
+                message: "User email already registered"
+            });
         }
         const existingUsername = await client.user.findUnique({ where: { username } });
         if (existingUsername) {
             console.log("Username already taken");
-            return res.status(400).json({ message: "User Username already taken" });
+            return res.status(400).json({
+                status: "Error",
+                message: "User Username already taken"
+            });
         }
         //Check how strong user's password is
         const passwordStrength = await checkPasswordStrength(password);
         if (!passwordStrength || passwordStrength.score < 3) {
-            return res.status(400).json({ message: "Please select a stronger password" });
+            return res.status(400).json({
+                status: "Error",
+                message: "Please select a stronger password"
+            });
         }
         const hashedPassword = await hashPassword(password);
         const newUser = await client.user.create({ data: { username, firstName, lastName, emailAddress, password: hashedPassword }, });
@@ -56,7 +68,10 @@ export const loginUser = async (req, res) => {
         const { emailAddress, password } = req.body;
         if (!emailAddress || !password) {
             console.log("All fields required");
-            return res.status(400).json({ message: "Something Went Wrong" });
+            return res.status(400).json({
+                status: "Error",
+                message: "Something Went Wrong"
+            });
         }
         //const inputPassword= await hashPassword(password);
         //Get User Data
@@ -72,7 +87,10 @@ export const loginUser = async (req, res) => {
         if (validityPassword) {
             const accessToken = generateToken(user.id, user.username);
             if (!accessToken) {
-                return res.status(500).json({ message: "Token generation failed" });
+                return res.status(500).json({
+                    status: "Error",
+                    message: "Token generation failed"
+                });
             }
             //Set Cookie for access token
             res.cookie("accessToken", accessToken, {

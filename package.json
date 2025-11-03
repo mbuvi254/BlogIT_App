@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
@@ -55,8 +56,13 @@
     "server": "nodemon dist/app.js",
     "build": "tsc"
   },
-  "keywords": [],
+  "keywords": [
+    "typescript",
+    "prisma",
+    "mssql",
+    "node"
+  ],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "Backend API for BlogIT built with TypeScript, Prisma, MSSQL, and Node.js"
 }

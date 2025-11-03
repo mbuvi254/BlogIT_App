@@ -28,7 +28,7 @@ export async function comparePassword(password:string,dbPassword:string) {
 // Password Checker
 export const checkPasswordStrength = async (password:string) => {
   try{
-    const result = await zxcvbn(password);
+    const result = zxcvbn(password);
     console.log("Password Strength:",result.score);
     if (result.score < 3) {
       console.log("Please select a stronger password");

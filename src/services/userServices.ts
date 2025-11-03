@@ -1,4 +1,4 @@
-// userControllers.ts
+// userServices.ts
 import client from "../config/database.js";
 import express, { type Request, type Response } from "express";
 
@@ -44,7 +44,9 @@ export const updateUser = async (req:Request, res:Response)=>{
 
         if(!username || ! firstName || ! lastName ){
             console.log("All fields required");
-            return res.status(400).json({message:"Something Went Wrong"})
+            return res.status(400).json({
+                status: "Error",
+                message:"Something Went Wrong"})
         }
         
         const updatedUser  = await client.user.update({
@@ -53,6 +55,7 @@ export const updateUser = async (req:Request, res:Response)=>{
         });
         console.log(`User updated ${updatedUser.username}`)
         return res.status(200).json({
+            status: "Success",
             message: "User Updated Successfully",
             user: updatedUser
         });
@@ -60,6 +63,7 @@ export const updateUser = async (req:Request, res:Response)=>{
     }catch(error){
         console.error("Error occured during user update:",error)
         return res.status(500).json({
+            status:"Error",
             message:"Something Went Wrong"
         });
         
@@ -72,15 +76,22 @@ export const deleteUser = async (req:Request,res:Response)=>{
         const {id} =req.params;
 
         const userId = String(id);
-        const deletedUser = await client.user.delete({
-            where :{ id : userId}
+        const deletedUser = await client.user.update({
+            where :{ id : userId},
+            data : {isDeleted:true}
 
         });
         if(!deletedUser){
             console.log("Error deleting User");
-            return res.status(404).json("User not Found")
+            return res.status(404).json({
+                status :"Error",
+                message:"User not Found"
+            })
         }
-        return res.status(200).json("User deleted successfully");
+        return res.status(200).json({
+            status :"Success",
+            message:"User deleted successfully"
+        });
     }catch(error){
         console.error("Database Error:",error);
         return res.status(500).json({message:"Something Went Wrong"})

@@ -1,6 +1,6 @@
 import express,{type Request,type Response,type Router} from 'express';
 import {registerUser,loginUser,logoutUser,getUserProfile} from '../controllers/authController.js';
-import { verifyToken } from '../controllers/tokenHelpers.js';
+import { verifyToken } from '../middlewares/authMiddleware.js';
 
 const authRouter:Router =express.Router();
 

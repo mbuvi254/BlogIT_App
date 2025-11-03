@@ -1,6 +1,6 @@
 // userRoutes.ts
 import express, {} from 'express';
-import { getAllUsers, getUser, updateUser, deleteUser } from '../controllers/usersController.js';
+import { getAllUsers, getUser, updateUser, deleteUser } from '../services/userServices.js';
 const userRouter = express.Router();
 //User CRUD
 userRouter.get("/", getAllUsers);

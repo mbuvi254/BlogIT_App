@@ -1,6 +1,6 @@
 // userRoutes.ts
 import express,{type Request,type Response,type Router} from 'express';
-import { getAllUsers, getUser, updateUser, deleteUser} from '../controllers/usersController.js';
+import { getAllUsers, getUser, updateUser, deleteUser} from '../services/userServices.js';
    
 
 const userRouter:Router = express.Router();

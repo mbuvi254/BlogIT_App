@@ -4,6 +4,8 @@ Lightweight backend for BlogIT — an Express + TypeScript API using Prisma for 
 
 This README covers quick setup, environment variables, development scripts, and notes about authentication and CORS (important for cookies).
 
+Built with: TypeScript, Prisma, Microsoft SQL Server (MSSQL), Node.js
+
 ## Prerequisites
 
 - Node.js (v18+ recommended)
@@ -169,4 +171,8 @@ npm install jsonwebtoken
 Fix Types Cors and JWT Errors ,types
 ```bash
 npm i --save-dev @types/cors @types/jsonwebtoken
+```
+
+```bash
+npm install --save-dev @types/bcrypt
 ```
