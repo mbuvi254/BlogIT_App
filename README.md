@@ -121,18 +121,6 @@ npx prisma studio
 
 ## Notes & next steps
 
-- The server currently uses `sameSite: 'strict'` for cookies; for cross-port local development update it to `lax` to allow the browser to send the cookie from the frontend origin. In production use `sameSite: 'none'` and `secure: true` when frontend and backend are on different domains.
-- If you'd like, I can make a small README tweak to document the exact cookie change and also apply the dev-friendly change in code and run a TypeScript build.
-
----
-
-If you want, I can also:
-- apply the development cookie change (sameSite -> 'lax')
-- update CORS origin to use `FRONTEND_URL` from env
-- run `npm run build` to verify TypeScript compiles
-
-Tell me which of those you'd like me to do next.
-
 Install Prisma ORM package
 
 ```bash
