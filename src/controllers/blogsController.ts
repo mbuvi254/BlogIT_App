@@ -1,3 +1,4 @@
+import { error } from "console";
 import client from "../config/database.js";
 import express,{type Request,type Response} from "express"
 
@@ -49,9 +50,24 @@ export const createNewBlog = async (req:AuthenticatedRequest,res:Response)=>{
 export const getAllBlogs = async (req:AuthenticatedRequest,res:Response)=>{
     try{
         const blogs = await client.blog.findMany(
-            {where:{
+              { 
+            where:{ 
                 isDelete:false
-            }}
+                 },
+            select:{
+                id:true,
+                title:true,
+                synopsis:true,
+                featuredImageUrl:true,
+                createdAt:true,
+                author :{
+                    select :{
+                        firstName:true,
+                        lastName:true
+                    }
+                },
+            }
+        }
         );
         if(!blogs.length){
             return res.status(404).json({
@@ -78,7 +94,34 @@ export const getAllBlogs = async (req:AuthenticatedRequest,res:Response)=>{
 export const getUserBlogs = async (req:AuthenticatedRequest,res:Response)=>{
     try{
         const authorId = req.user?.id;
-        const blogs = await client.blog.findMany({ where:{ authorId: authorId! }});
+        if(!authorId){
+            console.log("Unauthorized: Missing author ID");
+            return res.status(401).json({
+                status:"Error",
+                message:"Unauthorized: Missing author ID"
+        })
+        }
+        const blogs = await client.blog.findMany(
+            { 
+            where:{ 
+                authorId:authorId,
+                isDelete:false
+                 },
+            select:{
+                id:true,
+                authorId:true,
+                title:true,
+                synopsis:true,
+                featuredImageUrl:true,
+                createdAt:true,
+                author :{
+                    select :{
+                        firstName:true,
+                        lastName:true
+                    }
+                },
+            }
+        });
         
         if(blogs.length==0){
             return res.status(404).json({
@@ -109,7 +152,24 @@ export const getBlog = async (req:AuthenticatedRequest,res:Response)=>{
         const blogId = String(id);
         const authorId = req.user?.id;
         const blog = await client.blog.findUnique({
-            where :{id:blogId,isDelete:false}
+            where :{
+                id:blogId,
+                isDelete:false
+            },
+             select:{
+                id:true,
+                authorId:true,
+                title:true,
+                synopsis:true,
+                featuredImageUrl:true,
+                createdAt:true,
+                author :{
+                    select :{
+                        firstName:true,
+                        lastName:true
+                    }
+                },
+            }
         });
         if(!blog){
             return res.status(404).json({
@@ -144,7 +204,25 @@ export const updateBlog = async (req:AuthenticatedRequest,res:Response)=>{
         const blogId = String(id);
         const authorId = req.user?.id;
         //I get the blog
-        const blog = await client.blog.findUnique({ where: { id: blogId } });
+        const blog = await client.blog.findUnique({ 
+            where: { id: blogId },
+                select:{
+                id:true,
+                authorId:true,
+                title:true,
+                synopsis:true,
+                featuredImageUrl:true,
+                createdAt:true,
+                lastUpdated:true,
+                author :{
+                    select :{
+                        firstName:true,
+                        lastName:true
+                    }
+                },
+            }
+        
+        });
         if (!blog) {
             return res.status(404).json({ message: "Blog not found" });
         }
@@ -161,7 +239,8 @@ export const updateBlog = async (req:AuthenticatedRequest,res:Response)=>{
                 title,
                 synopsis,
                 featuredImageUrl,
-                content
+                content,
+                lastUpdated: new Date()
             }
         });
         console.log("Blog Created",updatedBlog)
@@ -292,6 +371,50 @@ export const deleteBlog = async (req:AuthenticatedRequest,res:Response)=>{
     }
 
 };
+
+
+export const getTrashedBlogs = async (req:AuthenticatedRequest,res:Response)=>{
+    try{
+        const blogs = await client.blog.findMany({ 
+            where:{ isDelete:true},
+            select:{
+                id:true,
+                title:true,
+                synopsis:true,
+                featuredImageUrl:true,
+                createdAt:true,
+                author :{
+                    select :{
+                        firstName:true,
+                        lastName:true}
+                },
+              }
+           }
+        );
+        if(!blogs.length){
+            return res.status(404).json({
+                status:"Error",
+                message:"No blogs found",
+        });
+        }
+        return res.status(200).json({
+            status : "success",
+            message : `Found:${blogs.length} blog(s)`,
+            blogs:blogs
+
+        });
+    }catch(error){
+        return res.status(500).json({
+            status:"Error",
+            message:"No blogs found",
+        });
+
+    }
+
+};
+
+
+
 
 
 

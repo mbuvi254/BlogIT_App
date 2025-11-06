@@ -13,5 +13,6 @@ export declare const updateBlog: (req: AuthenticatedRequest, res: Response) => P
 export declare const trashBlog: (req: AuthenticatedRequest, res: Response) => Promise<express.Response<any, Record<string, any>>>;
 export declare const restoreBlog: (req: AuthenticatedRequest, res: Response) => Promise<express.Response<any, Record<string, any>>>;
 export declare const deleteBlog: (req: AuthenticatedRequest, res: Response) => Promise<express.Response<any, Record<string, any>>>;
+export declare const getTrashedBlogs: (req: AuthenticatedRequest, res: Response) => Promise<express.Response<any, Record<string, any>>>;
 export {};
 //# sourceMappingURL=blogsController.d.ts.map

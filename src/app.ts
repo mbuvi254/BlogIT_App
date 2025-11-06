@@ -10,14 +10,15 @@ const app: Express= express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: "http://localhost:5000",
+  // origin: "http://localhost:5000",
+  origin:"*",
   credentials: true
 }));
 
 
 
 app.use('/auth',authRouter);
-app.use('/users',userRouter);
+app.use('/profile',userRouter);
 app.use('/blogs',blogRouter)
 
 

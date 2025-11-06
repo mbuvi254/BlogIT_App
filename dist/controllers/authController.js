@@ -97,7 +97,8 @@ export const loginUser = async (req, res) => {
                 httpOnly: true,
                 //secure:true for production
                 secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
+                // sameSite:"strict",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
                 maxAge: 24 * 60 * 60 * 1000 //1 day
             });
             console.log("Login Successful");
@@ -152,14 +153,61 @@ export const logoutUser = async (req, res) => {
         });
     }
 };
-export const getUserProfile = async (req, res) => {
+export const updateUserPassword = async (req, res) => {
     try {
         const userId = req.user?.id;
+        const { currentPassword, newPassword } = req.body;
         if (!userId) {
-            return res.status(401).json({ message: "Unauthorized" });
+            return res.status(401).json({
+                status: "Error",
+                message: "User not authenticated"
+            });
         }
-        const user = await client.user.findUnique({
+        if (!currentPassword || !newPassword) {
+            console.log("All fields required");
+            return res.status(400).json({
+                status: "Error",
+                message: "All fields are required"
+            });
+        }
+        //I check if email exists in db
+        const existingUser = await client.user.findUnique({ where: { id: userId } });
+        if (!existingUser) {
+            console.log("User does not exist");
+            return res.status(404).json({
+                status: "Error",
+                message: "User Does not exist"
+            });
+        }
+        //Check current password    
+        const dbPassword = existingUser.password;
+        const validityPassword = await comparePassword(currentPassword, dbPassword);
+        if (!validityPassword) {
+            return res.status(401).json({
+                status: "Error",
+                message: "Incorrect Current Password"
+            });
+        }
+        //Ensure password not reused
+        const samePassword = await comparePassword(newPassword, existingUser.password);
+        if (samePassword) {
+            return res.status(400).json({
+                status: "Error",
+                message: "New password cannot be the same as the old password"
+            });
+        }
+        //Check how strong user's password is
+        const passwordStrength = await checkPasswordStrength(newPassword);
+        if (!passwordStrength || passwordStrength.score < 3) {
+            return res.status(400).json({
+                status: "Error",
+                message: "Please select a stronger password"
+            });
+        }
+        const hashedPassword = await hashPassword(newPassword);
+        const updatedPassword = await client.user.update({
             where: { id: userId },
+            data: { password: hashedPassword, lastUpdated: new Date() },
             select: {
                 id: true,
                 username: true,
@@ -171,14 +219,19 @@ export const getUserProfile = async (req, res) => {
                 lastUpdated: true
             }
         });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-        return res.status(200).json(user);
+        console.log(`User password updated ${updatedPassword.username}`);
+        return res.status(200).json({
+            status: "Success",
+            message: "User Password Updated Successfully",
+            data: updatedPassword
+        });
     }
     catch (error) {
-        console.error("Error fetching profile:", error);
-        return res.status(500).json({ message: "Something went wrong" });
+        console.log("Error occured during user password update:", error);
+        return res.status(500).json({
+            status: "Error",
+            message: "Something Went Wrong"
+        });
     }
 };
 //# sourceMappingURL=authController.js.map

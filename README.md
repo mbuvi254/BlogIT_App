@@ -1,27 +1,32 @@
 # BlogIT_App
 
-Lightweight backend for BlogIT — an Express + TypeScript API using Prisma for the database and JWT-based auth.
+A basic yet functional blogging platform backend that lets users register, log in, write and manage blog posts, and maintain their profile.
 
-This README covers quick setup, environment variables, development scripts, and notes about authentication and CORS (important for cookies).
+Built with:
 
-Built with: TypeScript, Prisma, Microsoft SQL Server (MSSQL), Node.js
+- TypeScript
+- Node.js
+- Express
+- Prisma (ORM)
+- Microsoft SQL Server (MSSQL)
+- JSON Web Tokens (JWT) for auth
+- bcryptjs for password hashing
+- zxcvbn for password strength
+- cookie-parser for cookie handling
 
-## Prerequisites
+> Note: The codebase mounts routes at `/auth`, `/profile`, and `/blogs` (see `src/app.ts`).
 
-- Node.js (v18+ recommended)
-- npm
-- A SQL Server instance and a connection string (this project uses SQL Server via Prisma)
 
 ## Environment variables
 
 Create a `.env` file at the project root with at least the following values:
 
-```
+```bash
 PORT=5000
 DATABASE_URL="sqlserver://USER:PASSWORD@HOST:PORT;database=DB_NAME;encrypt=true"
 JWT_SECRET=your_jwt_secret_here
 NODE_ENV=development
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:5000
 ```
 
 Adjust values for your environment. Keep `JWT_SECRET` private.
@@ -31,7 +36,7 @@ Adjust values for your environment. Keep `JWT_SECRET` private.
 Install dependencies:
 
 ```bash
-npm install
+npm install -y
 ```
 
 Compile TypeScript to `dist/`:
@@ -77,15 +82,35 @@ npx prisma studio
 
 ## API (important endpoints)
 
+Public Auth `/ auth`:
+
 - POST /auth/register — register a new user
 - POST /auth/login — login; sets an HTTP-only cookie named `accessToken`
-- GET /auth/profile — protected route; reads JWT from cookie or Authorization header
+- POST /auth/logout — logout and clear cookie
+- PATCH /auth/password — update password (protected)
+
+Profile (mounted at `/profile` and protected):
+
+- GET /profile — get current authenticated user profile
+- PATCH /profile — update user profile
+- GET /profile/blogs — get current user's blogs
+- GET /profile/trash — get current user's trashed blogs
+
+Blogs (mounted at `/blogs`, protected for write operations):
+
+- POST /blogs — create a blog (authenticated)
+- GET /blogs — list public blogs
+- GET /blogs/:id — get a single blog (author-only access enforced)
+- PATCH /blogs/:id — update a blog (author-only)
+- DELETE /blogs/:id — delete a blog (author-only)
+- POST /blogs/:id/trash — move a blog to trash (author-only)
+- POST /blogs/:id/restore — restore a trashed blog (author-only)
 
 ## Authentication & Cookies (CORS considerations)
 
 This project sets an httpOnly cookie named `accessToken` on login. A common issue when the login succeeds but the profile endpoint returns 401 is that the browser does not send the cookie on subsequent requests. To make cookies work across ports/origins during development follow these steps:
 
-1. Make sure the server CORS `origin` matches your frontend origin. For example, if your frontend runs at `http://localhost:3000`, set `origin: 'http://localhost:3000'` in `src/app.ts`.
+1. Make sure the server CORS `origin` matches your frontend origin. For example, if your frontend runs at `http://localhost:3000`, set `origin: 'http://localhost:3000'` in `src/app.ts` (or set `FRONTEND_URL` and wire it in `app.ts`).
 2. The server must enable credentials: `credentials: true` (already set in `src/app.ts`).
 3. The frontend must send requests with credentials enabled:
 
@@ -94,7 +119,7 @@ This project sets an httpOnly cookie named `accessToken` on login. A common issu
 
 4. Cookie `sameSite` and `secure` settings affect whether the browser accepts/sends cookies across origins:
 
-   - For local development across different localhost ports, set `sameSite: 'lax'` on the cookie (the code currently uses `sameSite: 'strict'`, which can block cookie sending). If you need third-party cross-site cookies in production, use `sameSite: 'none'` with `secure: true`.
+   - For local development across different localhost ports, set `sameSite: 'lax'` on the cookie. In this code `sameSite` is set to `'lax'` for non-production and `'none'` in production (paired with `secure: true`). For cross-site cookies in production use `sameSite: 'none'` and `secure: true`.
 
 5. Use browser devtools -> Network -> request -> Cookies and Response headers to debug `Set-Cookie` and whether the browser is sending the cookie on requests.
 
