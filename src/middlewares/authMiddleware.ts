@@ -27,7 +27,8 @@ export  function verifyToken(req:Request,res:Response,next:NextFunction) {
             id: string; username: string 
         };
         //add the decoded data to the request 
-        (req as any).user = decoded;
+        //(req as any).user = decoded;
+        req.user = { id: decoded.id, username: decoded.username };
         next();
     }catch(error){
         console.error("Invalid Access Token");

@@ -19,7 +19,8 @@ export function verifyToken(req, res, next) {
         }
         const decoded = jwt.verify(access_token, SECRET_KEY);
         //add the decoded data to the request 
-        req.user = decoded;
+        //(req as any).user = decoded;
+        req.user = { id: decoded.id, username: decoded.username };
         next();
     }
     catch (error) {
